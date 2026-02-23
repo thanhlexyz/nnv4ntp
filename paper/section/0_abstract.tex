@@ -1,0 +1,15 @@
+\begin{abstract}
+    % Background/Context
+    Deep neural networks (DNNs) have emerged as a promising approach for mobile traffic prediction and capacity forecasting in next-generation wireless networks, leveraging newly developed architectures to capture spatiotemporal traffic demand for network resource provisioning and allocation.
+    % Research Problem/Aim - The Gap I Plan to Fill
+    However, DNN-based traffic forecasting systems are vulnerable to adversarial attacks in which adversaries inject traffic perturbations via compromised devices, leading to erroneous capacity forecasts and misallocation.
+    Existing defense mechanisms offer only empirical insights and lack formal guarantees, while neural network verification research has primarily focused on classification tasks, leaving regression problems such as mobile traffic forecasting unexplored.
+    % Method
+    We address this gap by proposing a formal verification framework that formulates adversarial traffic injection as hyperrectangle input properties, converts recent deep learning traffic prediction models into a neural network verifier-compatible format, and leverages NeuralSAT to provide robustness proofs for which scenarios the system is robust against adversarial traffic injection.
+    % Result
+    Preliminary proof-of-concept on the Telecom Italia Milan dataset demonstrates that our framework can formally guarantee whether DeepCog, a deep learning capacity provisioning model, is robust against adversarial traffic injection, providing network operators with peace of mind when deploying these models in production environments.
+\end{abstract}
+
+\begin{IEEEkeywords}
+    traffic prediction, DNN, formal verification
+\end{IEEEkeywords}

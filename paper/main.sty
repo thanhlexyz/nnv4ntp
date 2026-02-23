@@ -1,0 +1,73 @@
+% From template
+\IEEEoverridecommandlockouts
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% Citation
+\usepackage[sorting=none,style=ieee]{biblatex}
+\addbibresource{main.bib}
+\usepackage{etoolbox}
+\newcommand{\citeoneauthor}[1]{%
+  \ifnumequal{\value{liststop}}{1}%
+    {\citeauthor{#1}}%
+    {\citeauthor*{#1}}%
+}
+\renewcommand*{\bibfont}{\scriptsize}
+
+% Math
+\usepackage{amsmath,amssymb,amsfonts,mathrsfs}
+
+% Algorithm
+\usepackage{algorithmic}
+\usepackage{algorithm}
+
+% Figure
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+% Dont know
+\usepackage{textcomp}
+
+% Text color
+\usepackage{xcolor}
+
+% Table
+\usepackage{booktabs}
+\usepackage{multirow}
+
+% Abbreviation
+\usepackage[acronym, nowarn]{glossaries}
+\makeglossaries
+\loadglsentries{section/util/glossary}
+
+% Autoref
+\usepackage[bookmarks=false]{hyperref}
+\renewcommand{\figureautorefname}{Fig.}
+\renewcommand{\tableautorefname}{Tab.}
+\renewcommand{\equationautorefname}{Eq.}
+\renewcommand{\sectionautorefname}{\S\@gobble}
+\renewcommand{\subsectionautorefname}{\S\@gobble}
+\renewcommand{\subsubsectionautorefname}{\S\@gobble}
+\makeatother
+
+% Highlighting
+\usepackage{soul}
+\usepackage{tcolorbox}
+
+% Problem
+\newtheorem{problem}{Problem}
+
+% Drawing tikz
+\usepackage{tikz}
+\usetikzlibrary{automata,arrows,positioning,calc}
+
+% Comments
+\newtoggle{usecomment}
+\settoggle{usecomment}{false}
+\newcommand{\tl}[1]{\iftoggle{usecomment}{{\color{blue}{[TL]: #1}}}{}}
+\newcommand{\al}[1]{\iftoggle{usecomment}{{\color{red}{[AL]: #1}}}{}}
+\newcommand{\tm}[1]{\iftoggle{usecomment}{{\color{orange}{[TM]: #1}}}{}}
+\newcommand{\yj}[1]{\iftoggle{usecomment}{{\color{yellow}{[YJ]: #1}}}{}}
+
+% Decorate
+\newcommand{\eg}{\emph{e.g.}}

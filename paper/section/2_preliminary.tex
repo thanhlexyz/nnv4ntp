@@ -1,0 +1,64 @@
+\section{Preliminaries}
+    \label{sec:preliminary}
+
+    \subsection{System Model}
+        A \gls{dnn} is trained to forecast network traffic volumes at time step $t$ using historical past traffic volumes from previous time steps.
+        Formally, for a network slice $s$, let $\delta^s(t)$ denote the traffic snapshot at time $t$, which contains traffic demands at all base stations for slice $s$.
+        The \gls{dnn} takes $T$ historical traffic snapshots $\{\delta^s(t-T), \delta^s(t-T+1), \ldots, \delta^s(t-1)\}$ as input and produces a capacity forecast for time $t$.
+        Let $N(\cdot; \theta)$ be the \gls{dnn} function parameterized by $\theta$, which maps the sequence of historical snapshots to a capacity forecast $c^s(t)$.
+        This framework for mobile traffic prediction is particularly beneficial for the management of next-generation wireless networks, where accurate capacity forecasting enables efficient resource allocation and network optimization.
+
+        DeepCog \cite{bega2019deepcog} is a popular \gls{dnn} architecture specifically designed for capacity forecasting in network slicing scenarios.
+        The architecture follows an encoder-decoder structure tailored to capture spatiotemporal patterns in mobile network traffic.
+        The \emph{input} to DeepCog consists of historical traffic snapshots $\delta^s(t-1), \ldots, \delta^s(t-T)$ for network slice $s$, where each snapshot $\delta^s(t)$ contains traffic demands at all base stations at time $t$.
+        These snapshots are transformed into a 3D tensor (two spatial dimensions and one temporal dimension) that preserves traffic spatial-temporal correlations, enabling the 3D convolutional neural network to exploit them to accurately forecast future demands.
+
+        The \emph{neural network architecture} comprises two main components: (i) an \emph{encoder} with three 3D-CNN layers that extract spatiotemporal features from the input tensor, and (ii) a \emph{decoder} with fully connected layers that generate capacity forecasts.
+        % Specifically, the encoder uses three-dimensional convolutional layers with kernel sizes of $3 \times 3 \times 3$ (first layer) and $6 \times 6 \times 6$ (second and third layers), each followed by ReLU activation functions.
+        % Dropout layers with a rate $0.3$ are interleaved between the second and third 3D-CNN layers to prevent overfitting.
+        % The decoder consists of a Multi-Layer Perceptron (MLP) with fully connected layers of sizes 128, 64, and 32 neurons (with ReLU activation), followed by a final linear layer that produces the capacity forecast at the datacenter level.
+        The \emph{output} of DeepCog is a capacity forecast $c^s(t) = \{c^1_s(t), \ldots, c^M_s(t)\}$ for network slice $s$ at time $t$, where $c^j_s(t)$ represents the forecasted capacity needed at datacenter $j \in M$ to accommodate future traffic demands.
+        DeepCog employs a \emph{custom loss function} that explicitly balances the trade-off between resource overprovisioning and underprovisioning (\gls{sla} violations), rather than minimizing standard prediction errors like Mean Absolute Error or Mean Squared Error.
+        The loss function is parameterized by $\alpha = \beta/\gamma$, where $\beta$ is the fixed cost of an SLA violation and $\gamma$ is the cost per unit of overprovisioned capacity.
+        For a forecast error $x = c^j_s(t) - d^j_s(t)$ at datacenter $j$, where $d^j_s(t)$ is the actual demand, the loss function penalizes underestimation (SLA violations) with cost $\alpha$ and overestimation (overprovisioning) proportionally to the excess capacity.
+        This design enables operators to tune the balance between overprovisioning and unserved demand to align with their economic priorities.
+
+
+
+    \subsection{Threat Model}
+        We consider an adversary who gains access to compromised networked devices capable of injecting traffic into a mobile network (\autoref{fig:system-model}).
+        The attacker's primary objective is to disrupt normal network operations through denial-of-service attacks or, at a minimum, degrade the quality of service.
+        Examples of such compromised devices include IoT devices and smartphones infected with malicious software.
+
+        The adversary possesses sufficient technical capabilities to infiltrate and compromise a subset of network-connected devices, thereby gaining the ability to associate with the network infrastructure.
+        After establishing network connectivity, the attacker strategically injects traffic designed to cause service disruptions by introducing carefully crafted perturbations to the network load patterns.
+        The feasibility of such attacks has been demonstrated by real-world incidents, most notably the Mirai botnet \cite{antonakakis2017understanding}.
+        The adversary can compromise a fraction of the total devices, and once compromised, traffic injection becomes straightforward.
+        The malware enabling these attacks can be distributed through various vectors: embedded in user-installed applications, distributed via official app stores, or incentivized by offering users a way to sideload applications from untrusted web sources.
+        These distribution mechanisms have been extensively documented in the security literature \cite{gamba2020analysis,blazquez2021trouble,farooqi2020understanding}.
+
+        We assume that the attacker does not necessarily possess knowledge of the trained \gls{dnn} architecture or parameters used for traffic prediction.
+        The injected traffic must remain minimal to avoid detection, as the attacker is constrained by the need to prevent users from noticing excessive data consumption.
+        Additionally, mobile data plans typically impose usage limits and incur costs, further constraining the volume of traffic that can be injected without raising suspicion.
+        The attacker injects a limited amount of data to perturb the historical traffic measurements that serve as input to the traffic prediction model.
+        These manipulated historical data points may fall outside the distribution of clean training data, causing the \gls{dnn} to produce inaccurate future traffic predictions.
+        The resulting prediction errors lead to either over- or under-provisioning of network resources, which, in turn, causes resource misallocation, service degradation, service disruptions, and network instability.
+        When prediction errors persist over time, they can establish a continuous feedback loop with the resource allocation algorithm, amplifying long-term misallocation of resources.
+
+        \tl{Write on how DNN verification can check whether the model is robust or not to confidently deploy. }
+
+    \subsection{\gls{nnv} - An Overview}
+        The \emph{\gls{nnv} problem} concerns determining whether a given property $\phi$ holds for a \gls{dnn} $N$.
+        Properties are typically expressed as implications of the form $\phi_{in} \implies \phi_{out}$, where $\phi_{in}$ specifies constraints on the inputs of $N$ and $\phi_{out}$ specifies constraints on the outputs of $N$.
+        This formulation enables encoding safety and security requirements for \gls{dnn}s~\cite{duong2025neuralsat}.
+        A \gls{dnn} verifier searches for a \emph{counterexample} input that satisfies the input property $\phi_{in}$ but causes the output to violate $\phi_{out}$.
+        If no such counterexample can be found, the property is unsatisfiable (\texttt{UNSAT}), indicating that the \gls{dnn} is proven robust; otherwise, the property is satisfiable (\texttt{SAT}).
+
+        \gls{nnv} methods can be broadly categorized into two classes: (1) probabilistic guarantees and (2) deterministic guarantees.
+        Probabilistic approaches, such as randomized smoothing \cite{cohen2019certified}, provide high-probability certificates that a \gls{dnn} remains robust to $L_2$-norm perturbations within a specified radius.
+        In contrast, deterministic methods offer absolute guarantees of safety against any $L_p$-norm-constrained perturbations.
+        Deterministic \gls{nnv} techniques fall into three main categories: (1) constraint-based approaches~\cite{katz2022reluplex}, (2) abstraction-based approaches~\cite{singh2019abstract,xu2020automatic}, and (3) hybrid approaches \cite{duong2025neuralsat}.
+        Constraint-based methods can be computationally expensive, with solution time increasing significantly as the \gls{dnn} size grows \cite{katz2022reluplex}.
+        Abstraction-based methods address scalability by employing abstract domains such as polytopes (e.g., DeepPoly~\cite{singh2019abstract} and CROWN~\cite{xu2020automatic}) to enable verification of larger networks, though at the expense of some accuracy.
+        The core principle of abstraction-based verification is to construct polyhedral over-approximations using linear inequalities that tightly bound the possible outputs of non-linear activation functions, such as \gls{relu}.
+        NeuralSAT \cite{duong2025neuralsat} integrates constraint-based and abstraction-based techniques to extend the range of \gls{dnn} sizes that can be verified.

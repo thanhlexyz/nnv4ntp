@@ -1,0 +1,40 @@
+\section{Introduction}
+\label{sec:introduction}
+
+
+Beyond 5G networks is currently facing the challenge of a growing number of users and devices, but the physical wireless resources are limited.
+Therefore, analyzing traffic and accurately forecasting user demands is essential for developing an intelligent network \cite{aouedi2025deep}.
+Network traffic prediction models operate in the background, analyzing historical traffic demands to forecast expected future needs, which can be leveraged by downstream network management services and network optimization tools \cite{ji2023achieving,nguyen2024traffic}.
+Machine learning and deep learning models can leverage vast amounts of network measurement data, exploiting temporal correlations in long historical measurements and spatial dependencies among connected nodes \cite{le2021gcrint,le2021multi,le2019deep}.
+Given that network traffic exhibits complex relationships in both temporal and spatial dimensions, predicting future traffic volumes is a suitable task for deep learning models. These models require less domain knowledge and manual engineering than statistical methods such as \gls{arima} \cite{moyaedi2008arima}.
+
+However, the deployment of deep learning in network management raises fundamental security concerns, as \gls{dnn}s are vulnerable to adversarial attacks \cite{le2025fggm}.
+Such attacks involve introducing minor input modifications that can cause \gls{dnn}s to produce erroneous predictions.
+In the context of network traffic prediction, adversaries may infiltrate smartphones or IoT devices within the network coverage area~\cite{gholian2025deexp}.
+By orchestrating these compromised devices into a botnet, attackers can strategically inject minimal traffic volumes to corrupt the \gls{dnn}'s forecasting capabilities.
+These adversarial inputs are deliberately designed to evade anomaly detection mechanisms and remain within data usage constraints, yet they can substantially degrade the model's prediction accuracy.
+
+
+Consequently, there is increasing interest in explainable deep learning approaches for critical applications such as network optimization and management that demand high reliability.
+Existing research \cite{gholian2025deexp} has investigated the robustness of \gls{dnn}-based mobile traffic forecasting using \gls{xai} methods, seeking to identify which input features, such as historical traffic demand from specific base stations, are most susceptible to adversarial manipulation.
+These studies use \gls{gcam} and \gls{lrp} techniques to pinpoint base stations that are particularly susceptible to traffic-injection attacks.
+\gls{xai} approaches offer correlational insights to inform adversarial training procedures for model retraining.
+Nonetheless, non-certifying defense mechanisms, such as adversarial training, have been shown to be circumvented by more sophisticated attack strategies~\cite{athalye2018obfuscated}.
+To address this ongoing arms race, there is growing momentum toward defense strategies employing \gls{nnv}~\cite{singh2019abstract,cohen2019certified,xu2020automatic,katz2022reluplex,duong2025neuralsat}, which offer provable guarantees that \gls{dnn}s remain resilient to attacks across all inputs within specified bounds.
+\gls{nnv} complement \gls{xai} and adversarial training approaches by establishing the robustness of \gls{dnn}s through rigorous mathematical proofs.
+
+    \begin{figure*}[h]
+        \centering
+        \includegraphics[width=\linewidth]{figure/system_model.pdf}
+        \caption{Overview of system model of deep-learning-based mobile traffic prediction under adversarial traffic injections.}
+        \label{fig:system-model}
+    \end{figure*}
+
+
+Existing \gls{nnv} research has largely concentrated on verifying \gls{dnn}-based systems within the \gls{vnncomp} framework~\cite{brix2024fifth}, with limited exploration of \gls{dnn}-based network management applications \cite{le2025fggm,kim2025certified}.
+The \gls{vnncomp} evaluation benchmarks primarily focus on classification problems in domains such as computer vision, natural language processing, and autonomous aviation systems.
+To the best of our knowledge, verification of \gls{dnn}s for regression problems, including mobile network traffic forecasting, remains largely unexplored.
+
+This work addresses this research gap by leveraging cutting-edge formal verification methodologies for \gls{dnn}-based traffic forecasting systems.
+Our evaluation framework assesses whether trained \gls{dnn}s meet performance specifications under diverse levels of adversarial perturbation.
+We begin by encoding various adversarial perturbation levels as hyper-rectangle input constraints.

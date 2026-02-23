@@ -1,0 +1,74 @@
+\section{Evaluation Results}
+\label{sec:experiment}
+    \begin{table*}[t]
+        \vspace{0.06in}
+        \centering
+        \begin{minipage}[t]{0.48\textwidth}
+            \centering
+            \begin{tabular}{@{}clllll@{}}
+                \toprule
+                \multicolumn{1}{l}{\multirow{2}{*}{}} & \multicolumn{5}{c}{Percentage of injected traffic} \\ \cmidrule(l){2-6}
+                \multicolumn{1}{l}{} & +1\% & +5\% &  +10\% & +15\% & +20\% \\ \midrule
+                $\zeta=1\%$ & 0.0/1.0/0.0 & 0.0/1.0/0.0 & 0.0/1.0/0.0 & 0.0/1.0/0.0 & 0.0/1.0/0.0 \\
+                $\zeta=5\%$ & 0.0/1.0/0.0 & 0.0/1.0/0.0 & 0.0/1.0/0.0 & 0.0/1.0/0.0 & 0.0/1.0/0.0 \\
+                $\zeta=10\%$ & 0.0/1.0/0.0 & 0.0/1.0/0.0 & 0.0/1.0/0.0 & 0.0/1.0/0.0 & 0.0/1.0/0.0 \\ \bottomrule
+            \end{tabular}
+            \caption{Fraction of UNSAT, SAT, TIMEOUT for underestimation of user demand}
+            \label{tab:under}
+        \end{minipage}
+        \hfill
+        \begin{minipage}[t]{0.48\textwidth}
+            \centering
+            \begin{tabular}{@{}clllll@{}}
+                \toprule
+                \multicolumn{1}{l}{\multirow{2}{*}{}} & \multicolumn{5}{c}{Percentage of injected traffic} \\ \cmidrule(l){2-6}
+                \multicolumn{1}{l}{} & +1\% & +5\% &  +10\% & +15\% & +20\% \\ \midrule
+                $\zeta=1\%$ & 1.0/0.0/0.0 & 1.0/0.0/0.0 & 1.0/0.0/0.0 & 0.0/1.0/0.0 & 0.0/1.0/0.0 \\
+                $\zeta=5\%$ & 1.0/0.0/0.0 & 1.0/0.0/0.0 & 1.0/0.0/0.0 & 0.0/0.0/1.0 & 0.0/1.0/0.0 \\
+                $\zeta=10\%$ & 1.0/0.0/0.0 & 1.0/0.0/0.0 & 1.0/0.0/0.0 & 1.0/0.0/0.0 & 0.0/0.0/1.0 \\ \bottomrule
+            \end{tabular}
+            \caption{Fraction of UNSAT, SAT, TIMEOUT for overestimation of user demand}
+            \label{tab:over}
+        \end{minipage}
+    \end{table*}
+
+    \subsection{Evaluation Setups}
+        \subsubsection{Dataset}
+            We evaluate our verification framework using the Telecom Italia Milan dataset, which is a publicly available mobile traffic dataset widely used in the literature~\cite{bega2019deepcog}.
+            The dataset contains mobile traffic data collected in 2014 from Milan, Italy, covering 1,728 base stations and aggregated into a grid of approximately 10,000 square cells using Voronoi tessellation techniques.
+            The data includes SMS, voice calls, and Internet activities recorded at 10-minute granularity.
+            Following standard practice in mobile traffic prediction research, we use Internet activities as a proxy for mobile traffic volume.
+            % The Internet activities data is derived from Call Detail Records (CDRs), which are generated when users initiate or terminate internet connections, as well as during ongoing connections that last more than 15 minutes or transfer more than 5MB of data.
+            This dataset provides a spatial-temporal pattern of internet usage, making it well-suited for training and evaluating DeepCog-based traffic forecasting models.
+
+        \subsubsection{DNN Hyperparameters, input/output properties}
+            A DeepCog model is trained using an Adam optimizer with a learning rate of $3e^{-4}$ over $50$ epochs, employing Rectified Linear Unit (ReLU) as the activation function for all layers.
+            We use a standard 80:20 training-testing split, where each sample represents a traffic-demand snapshot within a 10-minute time interval.
+
+            For the prediction methodology, we select a representative area $A_{\text{Milan}} \in G_{\text{Milan}}$ of $5 \times 5$ cells similar to \cite{gholian2025deexp}.
+            Within this area, we train small models on $5 \times 5$ grids, where each model forecasts the capacity/traffic of the central cell only.
+
+            The DeepCog predictor employs a parameter $\alpha$ that represents the amount of overprovisioned capacity units that determine a penalty equivalent to one SLA violation.
+            A larger $\alpha$ implies higher SLA violation fees for the operator, thus influencing the balance between overprovisioning and \gls{sla} violations.
+            For the Milan dataset, we set $\alpha=2$ as suggested in \cite{bega2019deepcog} to prioritize avoiding \gls{sla} violations while allowing minimal overprovisioning.
+
+        \subsubsection{Evaluation Metrics}
+            For each verification instance, \texttt{NeuralSAT} returns one of three possible outcomes: \texttt{SAT}, \texttt{UNSAT}, or \texttt{timeout}.
+            The primary performance metric is the number of instances that return \texttt{SAT} (vulnerability found), \texttt{UNSAT} (formal robustness guarantee), or \texttt{timeout} (unknown within the time limit).
+            These are commonly used to compare the performance of different verification methods~\cite{duong2024harnessing,brix2024fifth} and provides a standardized evaluation framework for assessing the robustness of \gls{dnn}-based traffic forecasting models.
+
+
+
+    \subsection{Robustness Analysis under Adversarial Traffic Injection}
+
+        \autoref{tab:under} and \autoref{tab:over} present the verification results for adversarial traffic injection scenarios, where input traffic volumes are perturbed by varying percentages. Each cell reports the proportion of instances yielding \texttt{SAT}, \texttt{UNSAT}, or \texttt{TIMEOUT} for a given tolerance parameter $\zeta$ and injection level $\eta$. A \texttt{SAT} outcome indicates that the verifier identified at least one adversarial input causing the model to violate the output property (i.e., forecast error exceeding $\zeta$). Conversely, \texttt{UNSAT} certifies robustness under all perturbations within the specified bounds, while \texttt{TIMEOUT} denotes inconclusive verification within the allotted time.
+
+        \begin{itemize}
+            \item \emph{Underestimation scenario (\autoref{tab:under}):} Across all injection levels and underestimation tolerances, the verifier consistently returns \texttt{SAT}.
+                Although we set $\alpha$ to guide DeepCog to reduce underestimation, the model was still vulnerable on all properties.
+                This demonstrates that adversary can easily induce capacity underestimation beyond acceptable thresholds, exposing the model to potential denial-of-service or quality-of-service degradation attacks.
+
+            \item \emph{Overestimation scenario (\autoref{tab:over}):} In contrast, the model exhibits strong robustness against overestimation. For small injection levels (+1\%, +5\%, +10\%), \texttt{NeuralSAT} frequently returns \texttt{UNSAT}, confirming the model’s ability to avoid excessive overprovisioning and resource waste. However, this property is less critical in practice, as service providers typically tolerate minor overprovisioning. At higher injection levels (+15\% and +20\%), the results shift toward \texttt{SAT} or \texttt{TIMEOUT}, indicating that extreme perturbations can compromise robustness and require significant overprovisioning.
+        \end{itemize}
+
+        Overall, these findings reveal an asymmetric robustness profile: the model is provably resilient to overestimation under moderate perturbations but remains highly vulnerable to underestimation attacks.

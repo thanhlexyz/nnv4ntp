@@ -1,0 +1,72 @@
+\section{Proposed Verification Framework}
+\label{sec:propose}
+
+%     \autoref{fig:framework} illustrate a our proposed robustness guarantees framework for \gls{dnn}-based power control in massive \gls{mimo} through a three-phase pipeline.
+%     First, we formulate local robustness input properties encapsulating possible adversarial noise around system inputs.
+%     Then, an abstraction-based bound-propagation \gls{dnn} verifier method \cite{xu2020automatic,singh2019abstract} is adopted to compute bounds on possible power allocations provided by a trained \gls{dnn}.
+%     Finally, given the power allocation bounds, we formulate a constrained program to prove the non-existence of a power allocation that violates the maximum optimality gap guarantee, \eg, reducing the optimization objective by more than $\zeta$.
+
+\tl{Draw proposed pipeline. }
+
+
+    \subsection{Local Robustness Properties Formulation}
+        Following the threat model described in Section~\ref{sec:preliminary}, we assume that an attacker can inject additional traffic into the network through compromised devices in their botnet.
+        The adversary's objective is to introduce carefully crafted perturbations to the historical traffic data fed into the \gls{dnn}, thereby causing erroneous capacity forecasts that lead to resource misallocation and service degradation.
+
+        To formally verify the robustness of the considered \gls{dnn}-based traffic forecasting scheme, we define input specifications $\phi_{in} := [\eta_L, \eta_U]$ to encode permitted adversarial traffic injection levels.
+        Specifically, $\eta_L$ and $\eta_U$ are vectors having the same dimensionality as the input traffic snapshot $\delta^s(t)$, where each component represents the lower and upper bounds on the additional traffic that can be injected at each base station.
+        The adversary seeks to generate an adversarial traffic snapshot $\delta'^s(t)$ within a constrained neighborhood of the original traffic $\delta^s(t)$ such that the \gls{dnn} output becomes erroneous.
+        This adversarial input is constructed by adding a bounded perturbation $\delta'^s(t) = \delta^s(t) + \eta$ to the original traffic snapshot $\delta^s(t)$, where $\eta \in [\eta_L, \eta_U]$ represents the adversarial noise corresponding to the additional traffic injected by the botnet.
+        The input property $\phi_{in}$ thus constrains the perturbed traffic to lie within the hyperrectangle $[\eta_L, \eta_U] = [\delta^s(t), \delta^s(t) + \eta]$, ensuring that the verification covers all possible adversarial traffic injection scenarios within the specified bounds.
+
+    \subsection{Output Properties}
+
+        Recall that for a forecast error $x = c^j_s(t) - d^j_s(t)$ at datacenter $j$, where $c^j_s(t)$ is the forecasted capacity and $d^j_s(t)$ is the actual demand, DeepCog's loss function $\ell'(x)$ is defined as:
+        \begin{equation}
+            \ell'(x) = \begin{cases}
+                \alpha - \epsilon \cdot x & \text{if } x \leq 0 \\
+                \alpha - \frac{1}{\epsilon} x & \text{if } 0 < x \leq \epsilon\alpha \\
+                x - \alpha\epsilon & \text{if } x > \epsilon\alpha
+            \end{cases}
+        \end{equation}
+        where $\alpha = \beta/\gamma$ is the ratio of SLA violation cost $\beta$ to overprovisioning cost per unit $\gamma$, and $\epsilon$ is a small constant that enables gradient-based training.
+
+    To complement the robustness property, we construct two output properties that constrain the predicted capacity relative to actual demand:
+
+    \begin{enumerate}
+        \item \emph{Overprovisioning Bound:} The predicted capacity should not exceed $(1+\zeta)$ times the actual demand to avoid wasting resources:
+        \begin{equation}
+            \phi_{\text{over}}: \quad c^j_s(t) \leq (1+\zeta) \cdot d^j_s(t)
+        \end{equation}
+
+        \item \emph{Underprovisioning Bound:} The predicted capacity should not fall below $(1-\zeta)$ times the actual demand to prevent SLA violations:
+        \begin{equation}
+            \phi_{\text{under}}: \quad c^j_s(t) \geq (1-\zeta) \cdot d^j_s(t)
+        \end{equation}
+    \end{enumerate}
+    Together, these properties enforce:
+    \begin{equation}
+        (1-\zeta) \cdot d^j_s(t) \leq c^j_s(t) \leq (1+\zeta) \cdot d^j_s(t)
+    \end{equation}
+    This dual-property approach provides a practical guarantee: avoiding excessive overprovisioning while ensuring sufficient capacity to meet user SLAs.
+
+    \subsection{Verifier}
+
+        To solve the verification problem formulated with input property $\phi_{in}$ and output property $\phi_{out}$, we adopt state-of-the-art neural network verifier \texttt{NeuralSAT}~\cite{duong2024harnessing,duong2025neuralsat} as a black-box tool.
+        \texttt{NeuralSAT} is a top-performing verifier from the latest \gls{vnncomp}~\cite{brix2024fifth} that employs GPU-based linear relaxations and branch-and-bound techniques to efficiently verify \gls{dnn} properties.
+
+        We convert our verification problem into the standard \gls{vnncomp} format, which consists of three components: (1) the DeepCog \gls{dnn} model in ONNX format, (2) input properties $\phi_{in}$ specified in VNNLIB format that encode the adversarial traffic injection bounds $[\delta^s(t) + \eta_L, \delta^s(t) + \eta_U]$, and (3) output properties $\phi_{out}$ in VNNLIB format that encode the loss function threshold constraint $\mathcal{L}(c^s(t), d^s(t)) \leq \zeta \cdot \mathcal{L}(c^s_0(t), d^s(t))$.
+        The conversion of DeepCog's piecewise linear loss function into linear and \gls{relu} layers, as described in the previous subsection, ensures compatibility with \texttt{NeuralSAT}'s verification engine.
+        Since 3D convolution is not supported, we reimplement it as two consecutive 2D convolutional layers.
+        This does not reduce the forecast accuracy, while allowing the exported model to be compatible with \texttt{NeuralSAT}.
+
+        For each verification instance, \texttt{NeuralSAT} returns one of three possible outcomes: \texttt{SAT}, \texttt{UNSAT}, or \texttt{timeout}.
+        A \texttt{SAT} result indicates that the verification problem is satisfiable, meaning there exists at least one adversarial input within the specified bounds $[\eta_L, \eta_U]$ that causes the DeepCog model to violate the output property $\phi_{out}$, \eg, the loss function exceeds the threshold $\zeta$.
+        This result demonstrates a concrete vulnerability: adversarial traffic injection can degrade capacity forecasting performance beyond the acceptable threshold.
+        An \texttt{UNSAT} result indicates that the verification problem is unsatisfiable, meaning no adversarial input within the specified bounds can violate the output property.
+        This result provides a formal mathematical guarantee that the DeepCog model is robust against all possible adversarial traffic injection scenarios within the given input constraints.
+        A \texttt{timeout} result indicates that the verification instance exceeds the computational time limit, meaning the verifier cannot determine within the allocated resources whether the property holds.
+
+        The soundness of \texttt{NeuralSAT}'s verification procedure ensures that when it returns \texttt{UNSAT}, the result is mathematically sound, meaning no adversary can successfully attack the DeepCog model under the specified input and output conditions.
+        This soundness guarantee is fundamental to our verification framework: if \texttt{NeuralSAT} certifies that a DeepCog model is robust (returns \texttt{UNSAT}), then the claim is guaranteed to be true, providing network operators with confidence when deploying the verified model for resource provisioning in production environments.
+        This formal assurance goes beyond empirical testing methods, which can only demonstrate the existence of vulnerabilities through specific adversarial examples but cannot prove their absence across the entire continuous input space.
