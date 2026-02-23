@@ -1,0 +1,74 @@
+% Slide number
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+% Theme choice:
+\usetheme{CambridgeUS}
+
+% Drawing figures
+\usepackage{subcaption}
+
+% Algorithm
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% Drawing tikz
+\usepackage{tikz}
+\usetikzlibrary{automata,arrows.meta,positioning,calc}
+
+% URL
+\usepackage{hyperref}
+
+% GIF
+\usepackage{animate}
+
+% Table
+\usepackage{booktabs}
+
+% Code listings with Python syntax highlighting
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\scriptsize, breaklines=true}
+\lstdefinestyle{PythonStyle}{
+  language=Python,
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=true,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{green!60!black}\itshape,
+  stringstyle=\color{orange},
+  showstringspaces=false,
+  keepspaces=true,
+  columns=flexible,
+  numbers=none,
+  frame=none,
+}
+
+% Tool name
+% \newcommand{\tool}{\textsc{LlmBaB}}
+
+% References
+\usepackage[backend=biber,style=ieee,sorting=none]{biblatex}
+\addbibresource{main.bib}
+
+\makeatletter
+\renewcommand\@makefnmark{\hbox{\@textsuperscript{\usebeamercolor[fg]{footnote mark}\usebeamerfont*{footnote mark}[\@thefnmark]}}}
+\renewcommand\@makefntext[1]{{\usebeamercolor[fg]{footnote mark}\usebeamerfont*{footnote mark}[\@thefnmark]}\usebeamerfont*{footnote} #1}
+\makeatother
+
+% Comments
+\usepackage{xcolor}
+\usepackage{etoolbox}
+\usepackage{tcolorbox}
+\newtoggle{usecomment}
+\settoggle{usecomment}{true}
+\newcommand{\tl}[1]{\iftoggle{usecomment}{{\color{red}{[TL]: #1}}}{}}
+\newcommand{\hd}[1]{\iftoggle{usecomment}{{\color{blue}{[HD]: #1}}}{}}
+\newcommand{\tvn}[1]{\iftoggle{usecomment}{{\color{magenta}{[TVN]: #1}}}{}}
+\newcommand{\tm}[1]{\iftoggle{usecomment}{{\color{green}{[TM]: #1}}}{}}
+
+% Abbreviation
+\usepackage[acronym, nowarn]{glossaries}
+\makeglossaries
+\loadglsentries{util/glossary}
+
+% Tool
+\newcommand{\neuralsat}{\textsc{NeuralSAT}}
