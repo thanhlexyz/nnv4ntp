@@ -1,20 +1,43 @@
 \section{Preliminaries}
 
 \begin{frame}{System Model}
-    \begin{block}{Network traffic forecast}
-        A DNN is trained to forecast traffic at time $t$ from $T$ historical traffic snapshots $\delta^s(t-T), \ldots, \delta^s(t-1)$ (traffic demands at all base stations per slice $s$).
-        \textbf{Input:} historical snapshots $\to$ 3D tensor (spatiotemporal).
-        \textbf{Architecture:} encoder (3D-CNN) + decoder (MLP).
-        \textbf{Output:} capacity forecast $c^s(t) = \{c^1_s(t), \ldots, c^M_s(t)\}$ at datacenters; custom loss balances overprovisioning vs.\ SLA violations (tuned by $\alpha = \beta/\gamma$).
-    \end{block}
+    \begin{columns}
+        \begin{column}{0.58\textwidth}
+            \begin{figure}
+                \centering
+                \includegraphics[width=\linewidth]{figure/preliminary/system_model.pdf}
+                \caption{System model of \gls{dl}-based \gls{ntp}.}
+            \end{figure}
+        \end{column}
+        \begin{column}{0.38\textwidth}
+            \begin{itemize}
+                \item A DNN is trained to forecast traffic at time $t$ from $T$ historical traffic snapshots $\delta^s(t-T), \ldots, \delta^s(t-1)$ (traffic demands at all base stations per slice $s$).
+                \item \textbf{Input:} historical snapshots $\to$ 3D tensor (spatiotemporal).
+                \item \textbf{Architecture:} encoder (3D-CNN) + decoder (MLP).
+                \item \textbf{Output:} capacity forecast $c^s(t) = \{c^1_s(t), \ldots, c^M_s(t)\}$ at datacenters; custom loss balances overprovisioning vs.\ SLA violations (tuned by $\alpha = \beta/\gamma$).
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{DNN architecture --- DeepCog}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.7\linewidth]{figure/preliminary/deepcog.png}
+        \caption{DeepCog\footfullcite{bega2019deepcog} model based on 3D Conv.}
+    \end{figure}
 \end{frame}
 
 \begin{frame}{Threat Model}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.7\linewidth]{figure/preliminary/threat_model.pdf}
+        \caption{Threat model of \gls{dl}-based \gls{ntp}.}
+    \end{figure}
     \begin{itemize}
-        \item Adversary controls \emph{compromised devices} (e.g.\ IoT, smartphones) that inject traffic into the network (Mirai-style).
-        \item Goal: perturb \emph{historical} traffic measurements that feed the DNN $\to$ erroneous forecasts $\to$ over-/under-provisioning, service degradation.
-        \item Attacker need not know the DNN; injection is \emph{minimal} to avoid detection and stay within data limits.
-        \item DNN verification can check whether the model is robust under such perturbations, enabling confident deployment.
+        \item Adversary controls \alert{compromised devices} (\eg, IoT, smartphones) that inject traffic into the network (Mirai-style).
+        \item Goal: the \gls{dnn} \alert{over-/under-provisioning} $\rightarrow$ wasteful/service degradation.
+        \item \alert{Injection is minimal} to avoid detection and stay within data limits.
     \end{itemize}
 \end{frame}
 
