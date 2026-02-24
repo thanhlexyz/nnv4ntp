@@ -1,0 +1,43 @@
+\section{Preliminaries}
+
+\begin{frame}{System Model}
+    \begin{block}{Network traffic forecast}
+        A DNN is trained to forecast traffic at time $t$ from $T$ historical traffic snapshots $\delta^s(t-T), \ldots, \delta^s(t-1)$ (traffic demands at all base stations per slice $s$).
+        \textbf{Input:} historical snapshots $\to$ 3D tensor (spatiotemporal).
+        \textbf{Architecture:} encoder (3D-CNN) + decoder (MLP).
+        \textbf{Output:} capacity forecast $c^s(t) = \{c^1_s(t), \ldots, c^M_s(t)\}$ at datacenters; custom loss balances overprovisioning vs.\ SLA violations (tuned by $\alpha = \beta/\gamma$).
+    \end{block}
+\end{frame}
+
+\begin{frame}{Threat Model}
+    \begin{itemize}
+        \item Adversary controls \emph{compromised devices} (e.g.\ IoT, smartphones) that inject traffic into the network (Mirai-style).
+        \item Goal: perturb \emph{historical} traffic measurements that feed the DNN $\to$ erroneous forecasts $\to$ over-/under-provisioning, service degradation.
+        \item Attacker need not know the DNN; injection is \emph{minimal} to avoid detection and stay within data limits.
+        \item DNN verification can check whether the model is robust under such perturbations, enabling confident deployment.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Local Robustness Properties for DL-based NTP (1)}
+    \begin{block}{Input property $\phi_{in}$}
+        Encodes \emph{permitted adversarial traffic injection} as a hyperrectangle.
+        \begin{itemize}
+            \item Perturbation $\eta \in [\eta_L, \eta_U]$ (same dim as traffic snapshot $\delta^s(t)$).
+            \item Adversarial input: $\delta'^s(t) = \delta^s(t) + \eta$.
+            \item $\phi_{in}$ constrains perturbed traffic to $[\delta^s(t) + \eta_L, \delta^s(t) + \eta_U]$ so verification covers all injection scenarios within bounds.
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Local Robustness Properties for DL-based NTP (2)}
+    \begin{block}{Output property $\phi_{out}$}
+        Constrain forecast vs.\ actual demand $d^j_s(t)$ (tolerance $\zeta$):
+        \begin{itemize}
+            \item \textbf{Overprovisioning:} $c^j_s(t) \leq (1+\zeta)\, d^j_s(t)$.
+            \item \textbf{Underprovisioning:} $c^j_s(t) \geq (1-\zeta)\, d^j_s(t)$.
+        \end{itemize}
+    \end{block}
+    \begin{block}{Verification outcome}
+        \textbf{SAT:} exists adversarial input in $[\eta_L, \eta_U]$ violating $\phi_{out}$ (vulnerable). \quad \textbf{UNSAT:} no such input $\Rightarrow$ \emph{proven robust}.
+    \end{block}
+\end{frame}

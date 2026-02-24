@@ -1,10 +1,30 @@
-\section{Propose Verification Framework}
+\section{Proposed Verification Framework}
 
-\begin{frame}{NNV - An Overview}
+\begin{frame}{Proposed Pipeline}
+    \begin{enumerate}
+        \item \textbf{Input property $\phi_{in}$:} Encode permitted adversarial injection as hyperrectangle $[\eta_L, \eta_U]$; perturbed input $\delta'^s(t) = \delta^s(t) + \eta$, $\eta \in [\eta_L, \eta_U]$.
+        \item \textbf{Output property $\phi_{out}$:} Overprovisioning $c^j_s(t) \leq (1+\zeta)\, d^j_s(t)$; underprovisioning $c^j_s(t) \geq (1-\zeta)\, d^j_s(t)$; equivalently loss threshold $\mathcal{L} \leq \zeta \cdot \mathcal{L}_0$.
+        \item \textbf{Verifier:} Solve $\phi_{in} \implies \phi_{out}$ using a DNN verifier (e.g.\ \texttt{NeuralSAT}); SAT = vulnerability, UNSAT = proven robust.
+    \end{enumerate}
 \end{frame}
 
 \begin{frame}{SoTA DNN Verifiers}
+    \begin{block}{\texttt{NeuralSAT}}
+        State-of-the-art neural network verifier used as a black-box; top-performing in \gls{vnncomp}~\cite{brix2024fifth}.
+    \end{block}
+    \begin{itemize}
+        \item GPU-based linear relaxations + branch-and-bound.
+        \item Returns \texttt{SAT} (exists adversarial input violating $\phi_{out}$), \texttt{UNSAT} (no such input $\Rightarrow$ certified robust), or \texttt{timeout}.
+        \item Soundness: \texttt{UNSAT} $\Rightarrow$ mathematically guaranteed robustness under the given input/output conditions.
+    \end{itemize}
+    \fullcite{duong2025neuralsat}
 \end{frame}
 
-\begin{frame}{DL-model Conversion for \neuralsat}
+\begin{frame}{DL-model Conversion for \texttt{NeuralSAT}}
+    \textbf{VNNCOMP-style inputs:}
+    \begin{enumerate}
+        \item DeepCog DNN in \textbf{ONNX}; input props $\phi_{in}$ (bounds $[\delta^s(t)+\eta_L, \delta^s(t)+\eta_U]$) and output props $\phi_{out}$ in \textbf{VNNLIB}.
+        \item DeepCog's piecewise linear loss $\to$ linear + ReLU layers for verifier compatibility.
+        \item 3D convolution not supported $\to$ reimplement as \emph{two consecutive 2D} convolutional layers (no loss in forecast accuracy).
+    \end{enumerate}
 \end{frame}

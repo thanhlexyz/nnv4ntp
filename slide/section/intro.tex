@@ -20,8 +20,39 @@
 \end{frame}
 
 \begin{frame}{Solution -- Related works}
+    \begin{alertblock}{Adversarial Attacks on DL-based NTP}
+        \begin{itemize}
+            \item Adversaries infiltrate smartphones or IoT devices
+            \item Orchestrate \alert{botnets} to \alert{inject minimal traffic}
+            \item Corrupting the DNN's capacity provisioning while evading anomaly detection
+        \end{itemize}
+    \end{alertblock}
+    \begin{exampleblock}{Existing Solutions -- xAI}
+        \begin{itemize}
+            \item xAI methods (e.g.\ GCAM, LRP)
+            \item \alert{Identify} input features and base stations susceptible to traffic-injection attacks;
+            \item \alert{Inform} adversarial training.
+        \end{itemize}
+        \footfullcite{gholian2025deexp}
+    \end{exampleblock}
 \end{frame}
 
 \begin{frame}{Solution -- NNV}
-    \tl{also add input output figure}
+    \begin{alertblock}{Problem with non-certifying defense}
+        \begin{itemize}
+            \item Non-certifying defense mechanisms are circumvented by stronger attack strategies
+            \item Part of an ongoing arms race.
+        \end{itemize}
+        \footfullcite{athalye2018obfuscated}
+    \end{alertblock}
+    \begin{exampleblock}{Our Solution -- NNV}
+        \begin{itemize}
+            \item \gls{nnv} tools (e.g.\ NeuralSat, Reluplex, certified training)
+            \item Provide provable guarantees that \gls{dnn} remains resilient to attacks \alert{for all} inputs within specified bounds.
+            \item Complements \gls{xai} and adversarial training
+            \item Establishing \gls{dnn} robustness through rigorous mathematical proofs
+        \end{itemize}
+        \footfullcite{duong2025neuralsat}
+    \end{exampleblock}
+    % \tl{also add input output figure}
 \end{frame}
