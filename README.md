@@ -1,15 +1,13 @@
-### Formal Verification for Deep Learning-based Mobile Network Traffic Prediction
+# Formal Verification for Deep Learning-based Mobile Network Traffic Prediction
 
-#### Installation
+### Installation
 
 ```bash
 cd code/core
 pip3 install -r requirements
 ```
 
-##### Usage
-
-`TODO`
+### Usage
 
 1. Train DeepCog model
 ```bash
