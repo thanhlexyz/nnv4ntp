@@ -16,6 +16,9 @@
 *.snm
 **/main.pdf
 
-# python
+### python
 **/__pycache__
 *.pyc
+
+### drawio
+*.bkp
