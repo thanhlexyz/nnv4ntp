@@ -1,30 +1,58 @@
 \section{Proposed Verification Framework}
 
-\begin{frame}{Proposed Pipeline}
-    \begin{enumerate}
-        \item \textbf{Input property $\phi_{in}$:} Encode permitted adversarial injection as hyperrectangle $[\eta_L, \eta_U]$; perturbed input $\delta'^s(t) = \delta^s(t) + \eta$, $\eta \in [\eta_L, \eta_U]$.
-        \item \textbf{Output property $\phi_{out}$:} Overprovisioning $c^j_s(t) \leq (1+\zeta)\, d^j_s(t)$; underprovisioning $c^j_s(t) \geq (1-\zeta)\, d^j_s(t)$; equivalently loss threshold $\mathcal{L} \leq \zeta \cdot \mathcal{L}_0$.
-        \item \textbf{Verifier:} Solve $\phi_{in} \implies \phi_{out}$ using a DNN verifier (e.g.\ \texttt{NeuralSAT}); SAT = vulnerability, UNSAT = proven robust.
-    \end{enumerate}
+\begin{frame}{Local Robustness Properties for DL-based NTP}
+    \begin{block}{Input property $\phi_{in}$}
+        Encodes \emph{permitted adversarial traffic injection} as a hyperrectangle.
+        \begin{itemize}
+            \item Perturbation $\eta \in [\eta_L, \eta_U]$ (same dim as traffic snapshot $\delta^s(t)$).
+            \item Adversarial input: $\delta'^s(t) = \delta^s(t) + \eta$.
+            \item $\phi_{in}$ constrains perturbed traffic to $[\delta^s(t) + \eta_L, \delta^s(t) + \eta_U]$ so verification covers all injection scenarios within bounds.
+        \end{itemize}
+    \end{block}
+    \begin{block}{Output property $\phi_{out}$}
+        Constrain forecast vs.\ actual demand $d^j_s(t)$ (tolerance $\zeta$):
+        \begin{itemize}
+            \item \textbf{Overprovisioning:} $c^j_s(t) \leq (1+\zeta)\, d^j_s(t)$.
+            \item \textbf{Underprovisioning:} $c^j_s(t) \geq (1-\zeta)\, d^j_s(t)$.
+        \end{itemize}
+    \end{block}
 \end{frame}
+
 
 \begin{frame}{SoTA DNN Verifiers}
     \begin{block}{\texttt{NeuralSAT}}
-        State-of-the-art neural network verifier used as a black-box; top-performing in \gls{vnncomp}~\cite{brix2024fifth}.
+        Leverage SOTA \gls{dnn} verifier used as a \alert{black-box}; top-performing in \gls{vnncomp}.
     \end{block}
-    \begin{itemize}
-        \item GPU-based linear relaxations + branch-and-bound.
-        \item Returns \texttt{SAT} (exists adversarial input violating $\phi_{out}$), \texttt{UNSAT} (no such input $\Rightarrow$ certified robust), or \texttt{timeout}.
-        \item Soundness: \texttt{UNSAT} $\Rightarrow$ mathematically guaranteed robustness under the given input/output conditions.
-    \end{itemize}
+
+    \begin{columns}
+        \begin{column}{0.48\textwidth}
+            \begin{figure}
+                \centering
+                \outputgraph{0.95}
+                \caption{\gls{nnv} propagates continuous intervals}
+                \label{fig:nnv}
+            \end{figure}
+        \end{column}
+        \begin{column}{0.48\textwidth}
+            \begin{block}{Verification outcome}
+                \neuralsat($\langle \phi_{in} \phi_{out}, \mathcal{N}(x)$) $\rightarrow$ outcomes:
+                \begin{itemize}
+                    \item \textbf{SAT:} exists adversarial input in $[\eta_L, \eta_U]$ violating $\phi_{out}$ $\Rightarrow$ \alert{vulnerable}
+                    \item \textbf{UNSAT:} no such input $\Rightarrow$ \alert{proven robust}
+                    \item \textbf{TIMEOUT:} \gls{dnn} verifier unable to solve the instance within the time limit
+                \end{itemize}
+            \end{block}
+        \end{column}
+    \end{columns}
     \fullcite{duong2025neuralsat}
 \end{frame}
 
-\begin{frame}{DL-model Conversion for \texttt{NeuralSAT}}
-    \textbf{VNNCOMP-style inputs:}
-    \begin{enumerate}
-        \item DeepCog DNN in \textbf{ONNX}; input props $\phi_{in}$ (bounds $[\delta^s(t)+\eta_L, \delta^s(t)+\eta_U]$) and output props $\phi_{out}$ in \textbf{VNNLIB}.
-        \item DeepCog's piecewise linear loss $\to$ linear + ReLU layers for verifier compatibility.
-        \item 3D convolution not supported $\to$ reimplement as \emph{two consecutive 2D} convolutional layers (no loss in forecast accuracy).
-    \end{enumerate}
+\begin{frame}{Additional Conversion}
+    \begin{block}{Convert \gls{dl}-based \gls{ntp} to VNNCOMP-style inputs}
+        \begin{enumerate}
+            \item 3DConv not supported by \texttt{NeuralSAT} $\to$ reimplement DeepCog as \emph{two consecutive 2D} convolutional layers (no loss in forecast accuracy).
+            \item Export DeepCog to \textbf{ONNX}: open standard for interoperable DNN models; \gls{vnncomp} uses ONNX for the network format~\footfullcite{brix2024fifth}.
+            \item Export $\phi_{in}$ (bounds $[\delta^s(t)+\eta_L, \delta^s(t)+\eta_U]$) and $\phi_{out}$ in \textbf{VNNLIB}: declarative format for input/output constraints in \gls{vnncomp}.
+        \end{enumerate}
+    \end{block}
 \end{frame}

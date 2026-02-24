@@ -40,27 +40,3 @@
         \item \alert{Injection is minimal} to avoid detection and stay within data limits.
     \end{itemize}
 \end{frame}
-
-\begin{frame}{Local Robustness Properties for DL-based NTP (1)}
-    \begin{block}{Input property $\phi_{in}$}
-        Encodes \emph{permitted adversarial traffic injection} as a hyperrectangle.
-        \begin{itemize}
-            \item Perturbation $\eta \in [\eta_L, \eta_U]$ (same dim as traffic snapshot $\delta^s(t)$).
-            \item Adversarial input: $\delta'^s(t) = \delta^s(t) + \eta$.
-            \item $\phi_{in}$ constrains perturbed traffic to $[\delta^s(t) + \eta_L, \delta^s(t) + \eta_U]$ so verification covers all injection scenarios within bounds.
-        \end{itemize}
-    \end{block}
-\end{frame}
-
-\begin{frame}{Local Robustness Properties for DL-based NTP (2)}
-    \begin{block}{Output property $\phi_{out}$}
-        Constrain forecast vs.\ actual demand $d^j_s(t)$ (tolerance $\zeta$):
-        \begin{itemize}
-            \item \textbf{Overprovisioning:} $c^j_s(t) \leq (1+\zeta)\, d^j_s(t)$.
-            \item \textbf{Underprovisioning:} $c^j_s(t) \geq (1-\zeta)\, d^j_s(t)$.
-        \end{itemize}
-    \end{block}
-    \begin{block}{Verification outcome}
-        \textbf{SAT:} exists adversarial input in $[\eta_L, \eta_U]$ violating $\phi_{out}$ (vulnerable). \quad \textbf{UNSAT:} no such input $\Rightarrow$ \emph{proven robust}.
-    \end{block}
-\end{frame}

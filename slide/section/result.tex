@@ -1,40 +1,67 @@
 \section{Evaluation Results}
 
 \begin{frame}{Evaluation Setup}
-    \begin{itemize}
-        \item \textbf{Dataset:} Telecom Italia Milan (2014), 1,728 base stations $\to$ $\sim$10k cells; 10-minute granularity; Internet activities as traffic proxy~\cite{bega2019deepcog}.
-        \item \textbf{Model:} DeepCog; Adam ($3\times10^{-4}$), 50 epochs; $5\times5$ grid, central-cell forecast; $\alpha=2$ (prioritize avoiding SLA violations).
-        \item \textbf{Metrics:} For each instance, \texttt{NeuralSAT} returns \texttt{SAT} (vulnerability), \texttt{UNSAT} (certified robust), or \texttt{TIMEOUT}; proportions over injection levels $\eta$ and tolerance $\zeta$.
-    \end{itemize}
+    \begin{block}{Dataset --- Telecom Italia Milan 2014}
+        \begin{itemize}
+            \item Publicly available mobile traffic data; 1,728 base stations aggregated into $\sim$10k cells (Voronoi).
+            \item $\sim 7000$ time steps, $~50$ days measurements, 10-minute granularity.
+            \item \emph{Internet activities} traffic demands~\cite{bega2019deepcog}.
+            \item Spatial-temporal pattern well-suited for DeepCog-based traffic forecasting.
+        \end{itemize}
+    \end{block}
+    \begin{block}{DNN Parameter --- DeepCog}
+        \begin{itemize}
+            \item $5\times5$ grid; each model forecasts capacity of the \emph{central cell} only~\cite{gholian2025deexp}.
+            \item $\alpha=2$ (prioritize avoiding SLA violations over overprovisioning)~\cite{bega2019deepcog}.
+            \item Adam, learning rate $3\times10^{-4}$, 50 epochs; ReLU activation; 80:20 train-test split.
+            \item Verify on perturbed data on test set.
+        \end{itemize}
+        \footnote{Publicly available implementation at \url{https://github.com/thanhlexyz/nnv4ntp}}
+    \end{block}
 \end{frame}
 
-\begin{frame}{Verification Results -- Underestimation vs.\ Overestimation}
-    \begin{columns}
-        \begin{column}{0.48\textwidth}
-            \begin{block}{Underestimation (SLA violation)}
-                Vary $\zeta \in \{1\%,5\%,10\%\}$, injection +1\%--+20\%.
-                \textbf{Result:} Consistently \texttt{SAT} across all cells $\Rightarrow$ model \emph{vulnerable}; adversary can force capacity underestimation beyond $\zeta$.
-            \end{block}
-        \end{column}
-        \begin{column}{0.48\textwidth}
-            \begin{block}{Overestimation (overprovisioning)}
-                Same $\zeta$ and injection levels.
-                \textbf{Result:} Mostly \texttt{UNSAT} at +1\%, +5\%, +10\% $\Rightarrow$ \emph{provably robust}; at +15\%, +20\% more \texttt{SAT}/\texttt{TIMEOUT}.
-            \end{block}
-        \end{column}
-    \end{columns}
-    \vspace{0.5em}
-    \begin{alertblock}{Takeaway}
-        Asymmetric robustness: provably resilient to overestimation under moderate perturbations; highly vulnerable to underestimation attacks.
-    \end{alertblock}
+\begin{frame}{Robustness Analysis - Underestimation}
+    \begin{table}
+        \centering
+        \begin{tabular}{@{}clllll@{}}
+            \toprule
+            \multicolumn{1}{l}{\multirow{2}{*}{}} & \multicolumn{5}{c}{Percentage of injected traffic} \\ \cmidrule(l){2-6}
+            \multicolumn{1}{l}{} & +1\% & +5\% &  +10\% & +15\% & +20\% \\ \midrule
+            $\zeta=1\%$ & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} \\
+            $\zeta=5\%$ & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} \\
+            $\zeta=10\%$ & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} \\ \bottomrule
+        \end{tabular}
+        \caption{Fraction of UNSAT, SAT, TIMEOUT for underestimation of user demand}
+        \label{tab:under}
+    \end{table}
+    \begin{block}{Observations}
+        \begin{itemize}
+            \item Verifier consistently \alert{\texttt{SAT}} across all injection levels (+1\%--+20\%) and all $\zeta$ (1\%, 5\%, 10\%).
+            \item Despite $\alpha$ set to reduce underestimation, the model remains vulnerable on all properties.
+            \item Adversary can easily induce capacity underestimation beyond $\zeta$ $\Rightarrow$ DoS / QoS degradation.
+        \end{itemize}
+    \end{block}
 \end{frame}
 
-\begin{frame}{Result Tables (UNSAT / SAT / TIMEOUT)}
-    \small
-    \textbf{Underestimation} (fraction UNSAT/SAT/TIMEOUT): all cells $0.0/1.0/0.0$ (all \texttt{SAT}). \\
-    \textbf{Overestimation}: e.g.\ $\zeta=1\%$: $1.0/0.0/0.0$ for +1--+10\%; $0.0/1.0/0.0$ at +15\%; $\zeta=10\%$: $1.0/0.0/0.0$ for +1--+15\%, $0.0/0.0/1.0$ at +20\%.
-    \medskip
-    \begin{center}
-        See paper for full UNSAT/SAT/TIMEOUT tables (underestimation \& overestimation).
-    \end{center}
+\begin{frame}{Robustness Analysis - Overestimation}
+    \begin{table}
+        \centering
+        \begin{tabular}{@{}clllll@{}}
+            \toprule
+            \multicolumn{1}{l}{\multirow{2}{*}{}} & \multicolumn{5}{c}{Percentage of injected traffic} \\ \cmidrule(l){2-6}
+            \multicolumn{1}{l}{} & +1\% & +5\% &  +10\% & +15\% & +20\% \\ \midrule
+            $\zeta=1\%$ & \textcolor{green}{1.0/0.0/0.0} & \textcolor{green}{1.0/0.0/0.0} & \textcolor{green}{1.0/0.0/0.0} & \textcolor{red}{0.0/1.0/0.0} & \textcolor{red}{0.0/1.0/0.0} \\
+            $\zeta=5\%$ & \textcolor{green}{1.0/0.0/0.0} & \textcolor{green}{1.0/0.0/0.0} & \textcolor{green}{1.0/0.0/0.0} & 0.0/0.0/1.0 & \textcolor{red}{0.0/1.0/0.0} \\
+            $\zeta=10\%$ & \textcolor{green}{1.0/0.0/0.0} & \textcolor{green}{1.0/0.0/0.0} & \textcolor{green}{1.0/0.0/0.0} & \textcolor{green}{1.0/0.0/0.0} & 0.0/0.0/1.0 \\ \bottomrule
+        \end{tabular}
+        \caption{Fraction of UNSAT, SAT, TIMEOUT for overestimation of user demand}
+        \label{tab:over}
+    \end{table}
+    \begin{block}{Observations}
+        \begin{itemize}
+            \item \textbf{Small injection} (+1\%, +5\%, +10\%): \texttt{NeuralSAT} often \textcolor{green}{\texttt{UNSAT}} $\Rightarrow$ \emph{provably robust} against overprovisioning.
+            \item \textbf{High injection} (+15\%, +20\%): more \texttt{SAT}/\texttt{TIMEOUT} $\Rightarrow$ extreme perturbations can compromise robustness.
+            \item Takeaway: asymmetric profile --- resilient to overestimation under moderate $\eta$; highly vulnerable to underestimation.
+        \end{itemize}
+    \end{block}
 \end{frame}
