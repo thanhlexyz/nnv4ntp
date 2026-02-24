@@ -11,10 +11,10 @@
     \end{block}
     \begin{block}{DNN Parameter --- DeepCog}
         \begin{itemize}
-            \item $5\times5$ grid; each model forecasts capacity of the \emph{central cell} only~\cite{gholian2025deexp}.
+            \item $5\times5$ grid; $T=10$ historical steps; each model forecasts capacity of the \emph{central cell} only~\cite{gholian2025deexp}.
             \item $\alpha=2$ (prioritize avoiding SLA violations over overprovisioning)~\cite{bega2019deepcog}.
             \item Adam, learning rate $3\times10^{-4}$, 50 epochs; ReLU activation; 80:20 train-test split.
-            \item Verify on perturbed data on test set.
+            \item Verify on perturbed data on test set, \neuralsat timeout after $60$s.
         \end{itemize}
         \footnote{Publicly available implementation at \url{https://github.com/thanhlexyz/nnv4ntp}}
     \end{block}
