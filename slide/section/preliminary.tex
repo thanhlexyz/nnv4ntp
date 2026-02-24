@@ -14,7 +14,8 @@
                 \item A DNN is trained to forecast traffic at time $t$ from $T$ historical traffic snapshots $\delta^s(t-T), \ldots, \delta^s(t-1)$ (traffic demands at all base stations per slice $s$).
                 \item \textbf{Input:} historical snapshots $\to$ 3D tensor (spatiotemporal).
                 \item \textbf{Architecture:} encoder (3D-CNN) + decoder (MLP).
-                \item \textbf{Output:} capacity forecast $c^s(t) = \{c^1_s(t), \ldots, c^M_s(t)\}$ at datacenters; custom loss balances overprovisioning vs.\ SLA violations (tuned by $\alpha = \beta/\gamma$).
+                \item \textbf{Output:} capacity forecast $c^s(t) = \{c^1_s(t), \ldots, c^M_s(t)\}$ at each base station
+                \item $M$ --- number of base stations per slide $s$.
             \end{itemize}
         \end{column}
     \end{columns}

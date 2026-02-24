@@ -35,10 +35,10 @@
         \end{column}
         \begin{column}{0.48\textwidth}
             \begin{block}{Verification outcome}
-                \neuralsat($\langle \phi_{in} \phi_{out}, \mathcal{N}(x)$) $\rightarrow$ outcomes:
+                \neuralsat($\phi_{in}, \phi_{out}, \mathcal{N}(x)$) $\rightarrow$ outcomes:
                 \begin{itemize}
-                    \item \textbf{SAT:} exists adversarial input in $[\eta_L, \eta_U]$ violating $\phi_{out}$ $\Rightarrow$ \alert{vulnerable}
-                    \item \textbf{UNSAT:} no such input $\Rightarrow$ \alert{proven robust}
+                    \item \textcolor{red}{\textbf{SAT:}} exists adversarial input in $[\eta_L, \eta_U]$ violating $\phi_{out}$ $\Rightarrow$ \alert{vulnerable}
+                    \item \textcolor{green}{\textbf{UNSAT:}} no such input $\Rightarrow$ \alert{proven robust}
                     \item \textbf{TIMEOUT:} \gls{dnn} verifier unable to solve the instance within the time limit
                 \end{itemize}
             \end{block}
