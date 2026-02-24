@@ -12,8 +12,8 @@
     \begin{block}{Output property $\phi_{out}$}
         Constrain forecast vs.\ actual demand $d^j_s(t)$ (tolerance $\zeta$):
         \begin{itemize}
-            \item \textbf{Overprovisioning:} $c^j_s(t) \leq (1+\zeta)\, d^j_s(t)$.
-            \item \textbf{Underprovisioning:} $c^j_s(t) \geq (1-\zeta)\, d^j_s(t)$.
+            \item \textbf{Overprovisioning:} $\neg (c^j_s(t) \geq (1+\zeta)\, d^j_s(t))$.
+            \item \textbf{Underprovisioning:} $\neg (c^j_s(t) \leq (1-\zeta)\, d^j_s(t))$.
         \end{itemize}
     \end{block}
 \end{frame}
